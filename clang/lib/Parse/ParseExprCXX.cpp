@@ -1484,6 +1484,30 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
 
   Actions.ActOnStartOfLambdaDefinition(Intro, D, getCurScope());
 
+  // If this is an arrow lambda, we just need to parse an expression.
+  // We parse the expression, then put that expression in a return statement,
+  // and use that return statement as our body.
+  if (Tok.is(tok::fatarrow)) {
+    SourceLocation ReturnLoc(ConsumeToken());
+
+    ExprResult Expr(ParseExpression());
+    if (Expr.isInvalid()) {
+      Actions.ActOnLambdaError(LambdaBeginLoc, getCurScope());
+      return ExprError();
+    }
+
+    StmtResult Stmt = Actions.ActOnReturnStmt(ReturnLoc, Expr.get(), getCurScope());
+
+    BodyScope.Exit();
+    TemplateParamScope.Exit();
+
+    if (!Stmt.isInvalid() && !TrailingReturnType.isInvalid())
+      return Actions.ActOnLambdaExpr(LambdaBeginLoc, Stmt.get(), getCurScope());
+
+    Actions.ActOnLambdaError(LambdaBeginLoc, getCurScope());
+    return ExprError();
+  }
+
   // Parse compound-statement.
   if (!Tok.is(tok::l_brace)) {
     Diag(Tok, diag::err_expected_lambda_body);

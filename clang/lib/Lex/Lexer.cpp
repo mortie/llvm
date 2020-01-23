@@ -3825,6 +3825,9 @@ LexNextToken:
 
       Kind = tok::equalequal;
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
+    } else if (Char == '>') {
+      Kind = tok::fatarrow;
+      CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
     } else {
       Kind = tok::equal;
     }
