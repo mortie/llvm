@@ -1490,7 +1490,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
   if (Tok.is(tok::fatarrow)) {
     SourceLocation ReturnLoc(ConsumeToken());
 
-    ExprResult Expr(ParseExpression());
+    ExprResult Expr(ParseAssignmentExpression());
     if (Expr.isInvalid()) {
       Actions.ActOnLambdaError(LambdaBeginLoc, getCurScope());
       return ExprError();
